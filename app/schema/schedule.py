@@ -1,4 +1,5 @@
 from datetime import date, time
+from typing import Optional
 
 from .base import BaseModel, Field
 
@@ -10,6 +11,13 @@ class ScheduleDay(BaseModel):
 
 
 class ScheduleIn(BaseModel):
-    name: str = Field(example="30 Minutes Talk")
+    # TODO: make min-length configurable
+    name: str = Field(example="30 Minutes Talk", min_length=3)
     # TODO: make upper bound configurable
     timeframes: list[ScheduleDay] = Field(min_items=1, max_items=365)
+
+
+class ScheduleUpdateIn(BaseModel):
+    name: Optional[str] = Field(example="30 Minutes Talk", min_length=3)
+    # TODO: make upper bound configurable
+    timeframes: Optional[list[ScheduleDay]] = Field(min_items=1, max_items=365)

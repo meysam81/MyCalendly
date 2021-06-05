@@ -2,8 +2,9 @@ import logging
 from datetime import date, datetime, time
 from functools import reduce
 
-from timeframe import TimeFrame
+from timeframe import BatchTimeFrame, TimeFrame
 
+from app.common import exceptions
 from app.dependencies.database import Base as BaseORMModel
 from app.dependencies.database import Column, DateTime, Integer, String, db
 
@@ -68,6 +69,67 @@ class ScheduleModel(BaseModel):
             db.rollback()
             raise
 
+    @classmethod
+    def list_schedules(cls, offset, limit):
+        result = (
+            db.query(_ScheduleORM)
+            .order_by(_ScheduleORM.updated_ts.desc())
+            .offset(offset)
+            .limit(limit)
+            .all()
+        )
+        return list(map(cls.from_orm, result))
+
+    @classmethod
+    def retrieve_schedule(cls, schedule_id):
+        try:
+            schedule = db.query(_ScheduleORM).get(schedule_id)
+            if schedule is None:
+                raise exceptions.EntityNotFound(f"Schedule not found: {schedule_id}")
+            return cls.from_orm(schedule)
+        except Exception as exp:
+            logger.error(exp)
+            raise
+
+    @classmethod
+    def hard_delete_schedule(cls, schedule_id):
+        # TODO: do a soft delete
+        try:
+            result = (
+                db.query(_ScheduleORM).filter(_ScheduleORM.id == schedule_id).delete()
+            )
+            if not result:
+                raise exceptions.EntityNotFound(f"Schedule not found: {schedule_id}")
+            db.commit()
+        except Exception as exp:
+            logger.error(exp)
+            db.rollback()
+            raise
+
+    @classmethod
+    def update_schedule(cls, schedule_id, name=None, timeframes=None):
+        try:
+            schedule = db.query(_ScheduleORM).get(schedule_id)
+            if schedule is None:
+                raise exceptions.EntityNotFound(f"Schedule not found: {schedule_id}")
+
+            changed = False
+            if name is not None:
+                changed = True
+                schedule.name = name
+            if timeframes is not None:
+                changed = True
+                schedule.timeframes = cls._serialize_timeframes(timeframes)
+            if changed:
+                schedule.updated_ts = datetime.utcnow()
+            db.commit()
+
+            return cls.from_orm(schedule)
+        except Exception as exp:
+            logger.error(exp)
+            db.rollback()
+            raise
+
     @staticmethod
     def _serialize_timeframes(schedule_days: list[ScheduleDay]) -> str:
         # TODO: this should be done in the library of `timeframe`
@@ -78,7 +140,9 @@ class ScheduleModel(BaseModel):
 
         timeframes = map(convert_to_timeframe, schedule_days)
         batch_timeframes = reduce(lambda x, y: x + y, timeframes, next(timeframes))
-        return ",".join((map(repr, batch_timeframes)))
+        if isinstance(batch_timeframes, BatchTimeFrame):
+            return ",".join((map(repr, batch_timeframes)))
+        return repr(batch_timeframes)
 
     @staticmethod
     def _deserialize_timeframes(raw_timeframes: str) -> list[ScheduleDay]:
@@ -89,7 +153,9 @@ class ScheduleModel(BaseModel):
             start_ts, end_ts = tuple(map(datetime.fromisoformat, bounds))
             result.append(
                 ScheduleDay(
-                    date=start_ts.date(), start_ts=start_ts.time(), end_ts=end_ts.time()
+                    date=start_ts.date(),
+                    start_ts=start_ts.time(),
+                    end_ts=end_ts.time(),
                 )
             )
         return result
