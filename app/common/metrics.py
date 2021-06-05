@@ -2,6 +2,7 @@ import asyncio
 from datetime import datetime
 from functools import wraps
 from logging import Logger
+from pprint import pformat
 
 
 class Metrics:
@@ -26,7 +27,8 @@ class Metrics:
             self.values["exec_duration"] = (
                 datetime.utcnow() - self.exec_start
             ).total_seconds()
-        self.logger.info(f"[metrics] {self.values}")
+        msg = pformat(f"[metrics] {self.values}")
+        self.logger.info(msg)
 
     @classmethod
     def capture(cls, logger: Logger, with_duration=False):
