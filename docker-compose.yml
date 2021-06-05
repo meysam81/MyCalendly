@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:13.2-alpine
+    container_name: mycalendly-db
+    hostname: postgres
+    ports:
+      - "127.0.0.1:13200:5432"
+    volumes:
+      - "mycalendly-db:/var/lib/postgresql/data"
+    environment:
+      - POSTGRES_DB
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+    restart: on-failure
+
+volumes:
+  mycalendly-db:
