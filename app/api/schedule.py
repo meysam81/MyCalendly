@@ -1,10 +1,10 @@
 from http import HTTPStatus
 
-from app.common import api_doc_responses as common_responses
 from app.controllers.schedule import ScheduleController
 from app.models import schedule as schedule_model
 from app.schema import schedule as schedule_schema
 
+from . import api_doc_responses as common_responses
 from .base import APIRouter, Body, Path, Query
 
 router = APIRouter(prefix="/schedule")
