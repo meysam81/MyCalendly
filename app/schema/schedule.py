@@ -9,6 +9,9 @@ class ScheduleDay(BaseModel):
     start_ts: time = Field(example="09:00:00")
     end_ts: time = Field(example="17:00:00")
 
+    def __str__(self):
+        return str({k: str(v) for k, v in self.dict().items()})
+
 
 class ScheduleIn(BaseModel):
     # TODO: make min-length configurable
