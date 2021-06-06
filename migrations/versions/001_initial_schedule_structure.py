@@ -26,7 +26,6 @@ def upgrade():
         sa.Column("updated_ts", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_schedules_name"), "schedules", ["name"], unique=False)
     # ### end Alembic commands ###
 
 

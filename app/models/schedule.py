@@ -21,7 +21,7 @@ class _ScheduleORM(BaseORMModel):
     __tablename__ = "schedules"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(64), index=True, nullable=False)
+    name = Column(String(64), nullable=False)
     timeframes = Column(String(2 ** 15), nullable=False)
     created_ts = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_ts = Column(DateTime, nullable=False, default=datetime.utcnow)
