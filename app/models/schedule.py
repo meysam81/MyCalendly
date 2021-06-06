@@ -118,7 +118,7 @@ class ScheduleModel(BaseModel):
         cls, schedule_id, name=None, timeframes=None, duration=None, description=None
     ):
         try:
-            schedule = db.query(_ScheduleORM).get(schedule_id)
+            schedule: _ScheduleORM = db.query(_ScheduleORM).get(schedule_id)
             if schedule is None:
                 raise exceptions.EntityNotFound(f"Schedule not found: {schedule_id}")
 
@@ -137,7 +137,7 @@ class ScheduleModel(BaseModel):
                 changed = True
             if changed:
                 schedule.updated_ts = datetime.utcnow()
-            db.commit()
+                db.commit()
 
             return cls.from_orm(schedule)
         except Exception as exp:
