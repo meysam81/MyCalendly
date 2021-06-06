@@ -1,6 +1,7 @@
 import logging
 from datetime import date, datetime, time
 from functools import reduce
+from typing import Optional
 
 from timeframe import BatchTimeFrame, TimeFrame
 
@@ -22,6 +23,8 @@ class _ScheduleORM(BaseORMModel):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(64), nullable=False)
+    description = Column(String(512), nullable=True)
+    duration = Column(Integer, nullable=False)
     timeframes = Column(String(2 ** 15), nullable=False)
     created_ts = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_ts = Column(DateTime, nullable=False, default=datetime.utcnow)
@@ -41,6 +44,8 @@ class ScheduleDay(BaseModel):
 class ScheduleModel(BaseModel):
     id: int
     name: str
+    description: Optional[str]
+    duration: int
     timeframes: list[ScheduleDay]
     created_ts: datetime
     updated_ts: datetime
@@ -55,10 +60,12 @@ class ScheduleModel(BaseModel):
         return cls._deserialize_timeframes(value)
 
     @classmethod
-    def create_schedule(cls, name, timeframes):
+    def create_schedule(cls, name, timeframes, duration, description=None):
         try:
             schedule = _ScheduleORM(
                 name=name,
+                description=description,
+                duration=duration,
                 timeframes=cls._serialize_timeframes(timeframes),
             )
             db.add(schedule)
@@ -107,7 +114,9 @@ class ScheduleModel(BaseModel):
             raise
 
     @classmethod
-    def update_schedule(cls, schedule_id, name=None, timeframes=None):
+    def update_schedule(
+        cls, schedule_id, name=None, timeframes=None, duration=None, description=None
+    ):
         try:
             schedule = db.query(_ScheduleORM).get(schedule_id)
             if schedule is None:
@@ -120,6 +129,12 @@ class ScheduleModel(BaseModel):
             if timeframes is not None:
                 changed = True
                 schedule.timeframes = cls._serialize_timeframes(timeframes)
+            if duration is not None:
+                schedule.duration = duration
+                changed = True
+            if description is not None:
+                schedule.description = description
+                changed = True
             if changed:
                 schedule.updated_ts = datetime.utcnow()
             db.commit()

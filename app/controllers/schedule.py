@@ -17,7 +17,10 @@ class ScheduleController(BaseController):
             raise exceptions.BadTimeFrameProvided(err)
 
         return ScheduleModel.create_schedule(
-            name=schedule.name, timeframes=allowed_timeframes
+            name=schedule.name,
+            description=schedule.description,
+            duration=schedule.duration,
+            timeframes=allowed_timeframes,
         )
 
     @staticmethod
@@ -36,7 +39,11 @@ class ScheduleController(BaseController):
     def update_schedule(cls, schedule_id, schedule: schedule_schema.ScheduleUpdateIn):
         allowed_timeframes = cls.check_valid_timeframes(schedule.timeframes)
         return ScheduleModel.update_schedule(
-            schedule_id, name=schedule.name, timeframes=allowed_timeframes
+            schedule_id,
+            name=schedule.name,
+            description=schedule.description,
+            duration=schedule.duration,
+            timeframes=allowed_timeframes,
         )
 
     @staticmethod

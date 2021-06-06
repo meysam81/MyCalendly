@@ -16,11 +16,19 @@ class ScheduleDay(BaseModel):
 class ScheduleIn(BaseModel):
     # TODO: make min-length configurable
     name: str = Field(example="30 Minutes Talk", min_length=3)
+    description: Optional[str] = Field(
+        example="Let's have the first round of interview"
+    )
+    duration: int = Field(gt=0, description="Total amount in seconds")
     # TODO: make upper bound configurable
     timeframes: list[ScheduleDay] = Field(min_items=1, max_items=365)
 
 
 class ScheduleUpdateIn(BaseModel):
     name: Optional[str] = Field(example="30 Minutes Talk", min_length=3)
+    description: Optional[str] = Field(
+        example="Let's have the first round of interview"
+    )
+    duration: Optional[int] = Field(gt=0, description="Total amount in seconds")
     # TODO: make upper bound configurable
     timeframes: Optional[list[ScheduleDay]] = Field(min_items=1, max_items=365)
