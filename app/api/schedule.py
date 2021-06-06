@@ -13,6 +13,9 @@ router = APIRouter(prefix="/schedule")
 @router.post(
     "",
     response_model=schedule_model.ScheduleModel,
+    responses={
+        **common_responses.bad_time_frame_provided,
+    },
     status_code=HTTPStatus.CREATED,
 )
 async def create_schedule(schedule: schedule_schema.ScheduleIn):
@@ -58,6 +61,7 @@ async def delete_schedule(schedule_id: int = Path(..., ge=1)):
     "/{schedule_id}",
     responses={
         **common_responses.not_found,
+        **common_responses.bad_time_frame_provided,
     },
     response_model=schedule_model.ScheduleModel,
     status_code=HTTPStatus.OK,
