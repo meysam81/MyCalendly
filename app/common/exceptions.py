@@ -1,7 +1,7 @@
 import abc
 from http import HTTPStatus
 
-from app.api.base import HTTPException
+from .base import HTTPException
 
 
 class BaseException_(HTTPException, metaclass=abc.ABCMeta):
